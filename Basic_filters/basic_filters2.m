@@ -48,6 +48,21 @@ function basic_filters1()
     cp_kuan = corr2(kuan_filtered, image);
     cp_frost = corr2(frost_filtered, image);
 
+    % Display Bar graphs
+    filters = {'FROST', 'KUAN', 'LEE', 'NOISY'};
+    PSNR = [psnr_frost, psnr_kuan, psnr_lee, psnr_noisy];
+    RMSE = [rmse_frost, rmse_kuan, rmse_lee, rmse_noisy];
+    SSIM = [ssim_frost, ssim_kuan, ssim_frost, ssim_lee];
+    CORP = [cp_frost, cp_kuan, cp_lee, cp_noisy];
+    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
+    bar(data);
+    set(gca, 'XTickLabel', filters);
+    legend({'PSNR','RMSE','SSIM','CORP'});
+    ylabel('Value');
+    title('Filter Performance Comparison');
+    saveas(gcf,'bargraph_basic.png');
+
+
     % Display results
     figure;
     subplot(2,2,1); imshow(noisy_image, []); 
@@ -61,6 +76,8 @@ function basic_filters1()
 
     subplot(2,2,4); imshow(frost_filtered, []); 
     title(sprintf('Frost Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_frost, rmse_frost,ssim_frost,cp_frost));
+    
+    saveas(gcf, 'Basic_filtered_img.png');
 
     % Final results to put together in a spread sheet
     analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
@@ -73,9 +90,9 @@ function basic_filters1()
     T = table(analysis', NOISE', LEE', KUAN', FROST', 'VariableNames', {'ANALYSIS', 'NOISY', 'LEE', 'KUAN', 'FROST'});
 
     % Write to Excel file
-    writetable(T, 'Filter_Comparison.xlsx');
+    writetable(T, 'Filter_Comparison_Basic.xlsx');
 
-    disp('Results saved to Filter_Comparison.xlsx');
+    disp('Results saved to Filter_Comparison_basic.xlsx');
 
 end
 

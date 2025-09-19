@@ -1,5 +1,5 @@
 % Step 1: Read and preprocess the image
-img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h96.jpg');  % Replace with your image path
+img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\h96.jpg');  % Replace with your image path
 if size(img, 3) == 3
     img = rgb2gray(img);  % Convert to grayscale if the image is RGB
 end
@@ -39,6 +39,19 @@ snr_filtered = calculate_snr(img, filtered_img);  % SNR for filtered image
 cp_noisy = corr2(noise_img, img);
 cp_filt = corr2(filtered_img, img);
 
+% Display Bar graphs
+filters = {'NOISY', 'FILTERED'};
+SNR = [snr_noisy,snr_filtered];
+SSIM = [ssim_noisy,ssim_filterd];
+CORP = [cp_noisy,cp_filt];
+data = [SNR' SSIM' CORP'];   % combine columns
+bar(data);
+set(gca, 'XTickLabel', filters);
+legend({'PSNR','RMSE','SSIM','CORP'});
+ylabel('Value');
+title('Filter Performance Comparison');
+saveas(gcf,'bargraph_d.png');
+
 % Step 8: Display the Results
 figure;
 
@@ -56,6 +69,7 @@ title(sprintf('Noisy Image\nSNR: %.2f dB\nSSIM: %.4f\nCP: %.4f', snr_noisy,ssim_
 subplot(1, 3, 3);
 imshow(filtered_img, []);
 title(sprintf('Filtered Image\nSNR: %.2f dB\nSSIM: %.4f\nCP:%.4f', snr_filtered,ssim_filterd,cp_filt));
+saveas(gcf,'wavelet_decomp.png')
 
 % Final results to put together in a spread sheet
 analysis = {'SNR', 'SSIM', 'Correlation'};
@@ -66,7 +80,7 @@ WAV = [snr_filtered,ssim_filterd,cp_filt];
 T = table(analysis', NOISE', WAV' ,'VariableNames', {'ANALYSIS', 'NOISE', 'Wavelet Decomposed'});
 
 % Write to Excel file
-writetable(T, 'Filter_Comparison.xlsx');
+writetable(T, 'Filter_Comparison_d.xlsx');
 
 disp('Results saved to Filter_Comparison.xlsx');
 

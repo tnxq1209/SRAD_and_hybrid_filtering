@@ -1,6 +1,6 @@
 function wavelet_filtering1()
     % Step 1: Read and preprocess the image
-    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h48.jpg');  % Replace with your image path
+    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\h48.jpg');  % Replace with your image path
     if size(img, 3) == 3
         img = rgb2gray(img);  % Convert to grayscale if the image is RGB
     end
@@ -53,6 +53,20 @@ function wavelet_filtering1()
     cp_noisy = corr2(noise_img, img);
     cp_filt = corr2(filtered_img, img);
 
+    % Display Bar graphs
+    filters = {'NOISY', 'FILTERED'};
+    PSNR = [psnr_noisy,psnr_filtered];
+    RMSE = [psnr_noisy,rmse_filtered];
+    SSIM = [ssim_noisy,ssim_filterd];
+    CORP = [cp_noisy,cp_filt];
+    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
+    bar(data);
+    set(gca, 'XTickLabel', filters);
+    legend({'PSNR','RMSE','SSIM','CORP'});
+    ylabel('Value');
+    title('Filter Performance Comparison');
+    saveas(gcf,'bargraph_f.png');
+
     % Step 9: Display the Results
     figure;
 
@@ -70,6 +84,7 @@ function wavelet_filtering1()
     subplot(1, 3, 3);
     imshow(filtered_img, []);
     title(sprintf('Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_filtered, rmse_filtered,ssim_filterd,cp_filt));
+    saveas(gcf,'wavelet_filtering.png');
 
     % Final results to put together in a spread sheet
     analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
@@ -80,9 +95,9 @@ function wavelet_filtering1()
     T = table(analysis', NOISE', WAV' ,'VariableNames', {'ANALYSIS', 'NOISE', 'Wavelet Filtered'});
 
     % Write to Excel file
-    writetable(T, 'Filter_Comparison.xlsx');
+    writetable(T, 'Filter_Comparison_w.xlsx');
 
-    disp('Results saved to Filter_Comparison.xlsx');
+    disp('Results saved to Filter_Comparison_w.xlsx');
 
 end
 

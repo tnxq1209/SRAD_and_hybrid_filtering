@@ -4,7 +4,7 @@ function guided_filter_with_metrics()
     clc; clear; close all;
 
     % Load an image
-    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h60.jpg'); % Replace with your image file
+    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\h60.jpg'); % Replace with your image file
     if size(image, 3) == 3
         image = rgb2gray(image); % Convert to grayscale if it's a color image
     end
@@ -23,11 +23,31 @@ function guided_filter_with_metrics()
     % Apply guided filter
     filtered_image = guided_filter(noisy_image, noisy_image, radius, epsilon);
 
-    % Calculate PSNR and RMSE and SSIM
-    psnr_value = calculate_psnr(image, filtered_image);
-    rmse_value = calculate_rmse(image, filtered_image);
+    % Calculate PSNR and RMSE and SSIM and CP
+    psnr_noisy = calculate_psnr(noisy_image, filtered_image);
+    rmse_noisy = calculate_rmse(noisy_image, filtered_image);
     [ssim_noisy, ~]  = ssim(noisy_image, filtered_image);
     cp_noisy = corr2(noisy_image, filtered_image);
+
+    psnr_value = calculate_psnr(image, filtered_image);
+    rmse_value = calculate_rmse(image, filtered_image);
+    [ssim_value, ~]  = ssim(image, filtered_image);
+    cp_value = corr2(image, filtered_image);
+
+
+    % Display Bar graphs
+    filters = {'NOISY', 'FILTERED'};
+    PSNR = [psnr_noisy,psnr_value];
+    RMSE = [psnr_noisy,rmse_value];
+    SSIM = [ssim_noisy,ssim_value];
+    CORP = [cp_noisy,cp_value];
+    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
+    bar(data);
+    set(gca, 'XTickLabel', filters);
+    legend({'PSNR','RMSE','SSIM','CORP'});
+    ylabel('Value');
+    title('Filter Performance Comparison');
+    saveas(gcf,'bargraph_guided.png');
 
     % Display results
     figure;
@@ -37,14 +57,16 @@ function guided_filter_with_metrics()
     % Final results to put together in a spread sheet
     analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
     NOISE = [psnr_value, rmse_value,ssim_noisy,cp_noisy];  
+    saveas(gcf,'guided_filtered_img.png');
+
 
     % Put results into a table
     T = table(analysis', NOISE', 'VariableNames', {'ANALYSIS', 'GUIDED FILTER'});
 
     % Write to Excel file
-    writetable(T, 'Filter_Comparison.xlsx');
+    writetable(T, 'Filter_Comparison_guided.xlsx');
 
-    disp('Results saved to Filter_Comparison.xlsx');
+    disp('Results saved to Filter_Comparison_guided.xlsx');
 
 end
 
