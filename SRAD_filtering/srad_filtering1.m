@@ -7,7 +7,7 @@ function srad_filtering1()
     epsilon = 1e-6;      % Small constant to prevent division by zero (adjustable)
 
     % Load the image
-    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters-main\Speckle_noise_reduction_using_various_filters\Speckle_noise_reduction_using_various_filters\images\h60.jpg'); % Replace with your image path
+    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h60.jpg'); % Replace with your image path
     if size(img, 3) == 3
         img = rgb2gray(img);  % Convert to grayscale if the image is RGB
     end
@@ -43,6 +43,21 @@ function srad_filtering1()
     title(sprintf('Noisy Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy));
     subplot(1, 3, 3); imshow(filtered_img, []); 
     title(sprintf('SRAD Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_filtered, rmse_filtered,ssim_filtered,cp_filt));
+
+    % Final results to put together in a spread sheet
+    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
+    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];  
+    SRAD = [psnr_filtered, rmse_filtered,ssim_filtered,cp_filt]; 
+
+    % Put results into a table
+    T = table(analysis', NOISE', SRAD' ,'VariableNames', {'ANALYSIS', 'NOISE', 'SRAD Filtered'});
+
+    % Write to Excel file
+    writetable(T, 'Filter_Comparison.xlsx');
+
+    disp('Results saved to Filter_Comparison.xlsx');
+
+
 end
 
 function filtered_img = srad_filter(img, kappa, lambda, iterations, epsilon)

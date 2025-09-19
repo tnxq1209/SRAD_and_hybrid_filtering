@@ -4,7 +4,7 @@ function basic_filters1()
     clc; clear; close all;
 
     % Load an image with speckle noise
-    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters-main\Speckle_noise_reduction_using_various_filters\Speckle_noise_reduction_using_various_filters\h60.jpg'); % Replace with your image file
+    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\h60.jpg'); % Replace with your image file
     
     if size(image, 3) == 3
         image = rgb2gray(image); % Convert to grayscale if it's a color image
@@ -61,6 +61,22 @@ function basic_filters1()
 
     subplot(2,2,4); imshow(frost_filtered, []); 
     title(sprintf('Frost Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_frost, rmse_frost,ssim_frost,cp_frost));
+
+    % Final results to put together in a spread sheet
+    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
+    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];
+    LEE = [psnr_lee, rmse_lee,ssim_lee,cp_lee];
+    KUAN = [psnr_kuan, rmse_kuan,ssim_kuan,cp_kuan];
+    FROST = [psnr_frost, rmse_frost,ssim_frost,cp_frost];  
+
+    % Put results into a table
+    T = table(analysis', NOISE', LEE', KUAN', FROST', 'VariableNames', {'ANALYSIS', 'NOISY', 'LEE', 'KUAN', 'FROST'});
+
+    % Write to Excel file
+    writetable(T, 'Filter_Comparison.xlsx');
+
+    disp('Results saved to Filter_Comparison.xlsx');
+
 end
 
 % ----- Lee Filter Function -----

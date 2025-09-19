@@ -4,7 +4,7 @@ function guided_filter_with_metrics()
     clc; clear; close all;
 
     % Load an image
-    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters-main\Speckle_noise_reduction_using_various_filters\Speckle_noise_reduction_using_various_filters\images\h60.jpg'); % Replace with your image file
+    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h60.jpg'); % Replace with your image file
     if size(image, 3) == 3
         image = rgb2gray(image); % Convert to grayscale if it's a color image
     end
@@ -34,6 +34,17 @@ function guided_filter_with_metrics()
     subplot(1, 2, 1); imshow(noisy_image, []); title(sprintf('Noisy Image\n(Speckle Variance: %.2f)', noise_variance));
     subplot(1, 2, 2); imshow(filtered_image, []);
     title(sprintf('Guided Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM: %.4f, CP:%.4f', psnr_value, rmse_value,ssim_noisy,cp_noisy));
+    % Final results to put together in a spread sheet
+    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
+    NOISE = [psnr_value, rmse_value,ssim_noisy,cp_noisy];  
+
+    % Put results into a table
+    T = table(analysis', NOISE', 'VariableNames', {'ANALYSIS', 'GUIDED FILTER'});
+
+    % Write to Excel file
+    writetable(T, 'Filter_Comparison.xlsx');
+
+    disp('Results saved to Filter_Comparison.xlsx');
 
 end
 

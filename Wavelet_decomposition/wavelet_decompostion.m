@@ -1,5 +1,5 @@
 % Step 1: Read and preprocess the image
-img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters-main\Speckle_noise_reduction_using_various_filters\Speckle_noise_reduction_using_various_filters\images\h96.jpg');  % Replace with your image path
+img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h96.jpg');  % Replace with your image path
 if size(img, 3) == 3
     img = rgb2gray(img);  % Convert to grayscale if the image is RGB
 end
@@ -56,4 +56,17 @@ title(sprintf('Noisy Image\nSNR: %.2f dB\nSSIM: %.4f\nCP: %.4f', snr_noisy,ssim_
 subplot(1, 3, 3);
 imshow(filtered_img, []);
 title(sprintf('Filtered Image\nSNR: %.2f dB\nSSIM: %.4f\nCP:%.4f', snr_filtered,ssim_filterd,cp_filt));
+
+% Final results to put together in a spread sheet
+analysis = {'SNR', 'SSIM', 'Correlation'};
+NOISE = [snr_noisy,ssim_noisy,cp_noisy];  
+WAV = [snr_filtered,ssim_filterd,cp_filt]; 
+
+% Put results into a table
+T = table(analysis', NOISE', WAV' ,'VariableNames', {'ANALYSIS', 'NOISE', 'Wavelet Decomposed'});
+
+% Write to Excel file
+writetable(T, 'Filter_Comparison.xlsx');
+
+disp('Results saved to Filter_Comparison.xlsx');
 

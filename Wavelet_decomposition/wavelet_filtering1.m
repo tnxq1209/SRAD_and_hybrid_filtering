@@ -1,6 +1,6 @@
 function wavelet_filtering1()
     % Step 1: Read and preprocess the image
-    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters-main\Speckle_noise_reduction_using_various_filters\Speckle_noise_reduction_using_various_filters\images\h48.jpg');  % Replace with your image path
+    img = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\h48.jpg');  % Replace with your image path
     if size(img, 3) == 3
         img = rgb2gray(img);  % Convert to grayscale if the image is RGB
     end
@@ -70,6 +70,20 @@ function wavelet_filtering1()
     subplot(1, 3, 3);
     imshow(filtered_img, []);
     title(sprintf('Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_filtered, rmse_filtered,ssim_filterd,cp_filt));
+
+    % Final results to put together in a spread sheet
+    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
+    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];  
+    WAV = [psnr_filtered, rmse_filtered,ssim_filterd,cp_filt]; 
+
+    % Put results into a table
+    T = table(analysis', NOISE', WAV' ,'VariableNames', {'ANALYSIS', 'NOISE', 'Wavelet Filtered'});
+
+    % Write to Excel file
+    writetable(T, 'Filter_Comparison.xlsx');
+
+    disp('Results saved to Filter_Comparison.xlsx');
+
 end
 
 % Custom PSNR Function
