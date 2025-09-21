@@ -23,51 +23,21 @@ function guided_filter_with_metrics()
     % Apply guided filter
     filtered_image = guided_filter(noisy_image, noisy_image, radius, epsilon);
 
-    % Calculate PSNR and RMSE and SSIM and CP
-    psnr_noisy = calculate_psnr(noisy_image, filtered_image);
-    rmse_noisy = calculate_rmse(noisy_image, filtered_image);
+    % Calculate SSIM and CP
     [ssim_noisy, ~]  = ssim(noisy_image, filtered_image);
     cp_noisy = corr2(noisy_image, filtered_image);
 
-    psnr_value = calculate_psnr(image, filtered_image);
-    rmse_value = calculate_rmse(image, filtered_image);
     [ssim_value, ~]  = ssim(image, filtered_image);
     cp_value = corr2(image, filtered_image);
 
 
-    % Display Bar graphs
-    filters = {'NOISY', 'FILTERED'};
-    PSNR = [psnr_noisy,psnr_value];
-    RMSE = [psnr_noisy,rmse_value];
-    SSIM = [ssim_noisy,ssim_value];
-    CORP = [cp_noisy,cp_value];
-    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
-    bar(data);
-    set(gca, 'XTickLabel', filters);
-    legend({'PSNR','RMSE','SSIM','CORP'});
-    ylabel('Value');
-    title('Filter Performance Comparison');
-    saveas(gcf,'bargraph_guided.png');
-
+   
     % Display results
     figure;
     subplot(1, 2, 1); imshow(noisy_image, []); title(sprintf('Noisy Image\n(Speckle Variance: %.2f)', noise_variance));
     subplot(1, 2, 2); imshow(filtered_image, []);
-    title(sprintf('Guided Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM: %.4f, CP:%.4f', psnr_value, rmse_value,ssim_noisy,cp_noisy));
-    % Final results to put together in a spread sheet
-    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
-    NOISE = [psnr_value, rmse_value,ssim_noisy,cp_noisy];  
-    saveas(gcf,'guided_filtered_img.png');
-
-
-    % Put results into a table
-    T = table(analysis', NOISE', 'VariableNames', {'ANALYSIS', 'GUIDED FILTER'});
-
-    % Write to Excel file
-    writetable(T, 'Filter_Comparison_guided.xlsx');
-
-    disp('Results saved to Filter_Comparison_guided.xlsx');
-
+    title(sprintf('Guided Filter\n SSIM: %.4f, CP:%.4f',ssim_noisy,cp_noisy));
+    
 end
 
 function guided_img = guided_filter(I, P, radius, epsilon)
@@ -100,17 +70,4 @@ function result = box_filter(img, radius)
     % Fast box filter for mean calculation
     kernel = ones(2*radius + 1, 2*radius + 1);
     result = conv2(img, kernel, 'same');
-end
-
-function psnr_value = calculate_psnr(original, processed)
-    % PSNR Calculation
-    mse = mean((original(:) - processed(:)).^2);
-    max_pixel_value = 1; % Since images are normalized to [0, 1]
-    psnr_value = 10 * log10((max_pixel_value^2) / mse);
-end
-
-function rmse_value = calculate_rmse(original, processed)
-    % RMSE Calculation
-    mse = mean((original(:) - processed(:)).^2);
-    rmse_value = sqrt(mse);
 end

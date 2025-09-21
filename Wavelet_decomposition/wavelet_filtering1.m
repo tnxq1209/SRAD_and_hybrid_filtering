@@ -39,12 +39,7 @@ function wavelet_filtering1()
     % Step 7: Reconstruct the Image from the Filtered Coefficients
     filtered_img = waverec2(c_filtered, s, waveletType);  % Reconstruct the filtered image
 
-    % Step 8: Calculate PSNR and RMSE Values using the custom functions
-    psnr_noisy = calculate_psnr(noise_img, img);  % PSNR for noisy image
-    rmse_noisy = calculate_rmse(noise_img, img);  % RMSE for noisy image
-    psnr_filtered = calculate_psnr(filtered_img, img);  % PSNR for filtered image
-    rmse_filtered = calculate_rmse(filtered_img, img);  % RMSE for filtered image
-
+   
     % Calculating SSIM
     [ssim_noisy, ~]  = ssim(noise_img, img);
     [ssim_filterd, ~]  = ssim(filtered_img, img);
@@ -53,20 +48,7 @@ function wavelet_filtering1()
     cp_noisy = corr2(noise_img, img);
     cp_filt = corr2(filtered_img, img);
 
-    % Display Bar graphs
-    filters = {'NOISY', 'FILTERED'};
-    PSNR = [psnr_noisy,psnr_filtered];
-    RMSE = [psnr_noisy,rmse_filtered];
-    SSIM = [ssim_noisy,ssim_filterd];
-    CORP = [cp_noisy,cp_filt];
-    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
-    bar(data);
-    set(gca, 'XTickLabel', filters);
-    legend({'PSNR','RMSE','SSIM','CORP'});
-    ylabel('Value');
-    title('Filter Performance Comparison');
-    saveas(gcf,'bargraph_f.png');
-
+    
     % Step 9: Display the Results
     figure;
 
@@ -83,55 +65,6 @@ function wavelet_filtering1()
     % Reconstructed (Filtered) Image
     subplot(1, 3, 3);
     imshow(filtered_img, []);
-    title(sprintf('Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_filtered, rmse_filtered,ssim_filterd,cp_filt));
+    title(sprintf('Filtered Image\nSSIM: %.4f\nCP: %.4f', ssim_filterd,cp_filt));
     saveas(gcf,'wavelet_filtering.png');
-
-    % Final results to put together in a spread sheet
-    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
-    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];  
-    WAV = [psnr_filtered, rmse_filtered,ssim_filterd,cp_filt]; 
-
-    % Put results into a table
-    T = table(analysis', NOISE', WAV' ,'VariableNames', {'ANALYSIS', 'NOISE', 'Wavelet Filtered'});
-
-    % Write to Excel file
-    writetable(T, 'Filter_Comparison_w.xlsx');
-
-    disp('Results saved to Filter_Comparison_w.xlsx');
-
-end
-
-% Custom PSNR Function
-function psnr_val = calculate_psnr(processed, original)
-    % calculate_psnr - Calculates the Peak Signal-to-Noise Ratio (PSNR) 
-    % between the original and processed images.
-    %
-    % Inputs:
-    %   processed - Processed (noisy or filtered) image.
-    %   original  - Original (reference) image.
-    %
-    % Output:
-    %   psnr_val  - Peak Signal-to-Noise Ratio (PSNR) in dB.
-
-    mse = mean((processed(:) - original(:)).^2);  % Mean Squared Error
-    max_val = 1;  % Maximum possible pixel value (for normalized images, it's 1)
-    
-    % Calculate PSNR
-    psnr_val = 10 * log10(max_val^2 / mse);
-end
-
-% Custom RMSE Function
-function rmse_val = calculate_rmse(processed, original)
-    % calculate_rmse - Calculates the Root Mean Squared Error (RMSE)
-    % between the original and processed images.
-    %
-    % Inputs:
-    %   processed - Processed (noisy or filtered) image.
-    %   original  - Original (reference) image.
-    %
-    % Output:
-    %   rmse_val  - Root Mean Squared Error (RMSE).
-
-    mse = mean((processed(:) - original(:)).^2);  % Mean Squared Error
-    rmse_val = sqrt(mse);  % RMSE is the square root of MSE
 end

@@ -3,96 +3,87 @@ function basic_filters1()
 
     clc; clear; close all;
 
-    % Load an image with speckle noise
-    image = imread('C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\h60.jpg'); % Replace with your image file
-    
-    if size(image, 3) == 3
-        image = rgb2gray(image); % Convert to grayscale if it's a color image
+    % === 1. Define Input & Output Paths ===
+    inFolder  = 'C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\images\image_inuse';   % input images folder(choose your own image folder)
+    outFolder = 'C:\Users\TNXQ\Desktop\Speckle_noise_reduction_using_various_filters\Metrices_table';       % output results folder(choose your own output folder)
+
+    % Create output folder if not exists
+    if ~exist(outFolder, 'dir')
+        mkdir(outFolder);
     end
 
-    % Normalize image to [0, 1]
-    image = double(image) / 255;
+    % === 2. Get List of Images ===
+    imgFiles = dir(fullfile(inFolder, '*.jpg'));   % change to *.png if needed
 
-    % Add speckle noise with 0.08 variance (equivalent to 0.08 dB noise)
-    noise_variance = 0.08;
-    noisy_image = imnoise(image, 'speckle', noise_variance);
-
-    % Parameters for the filters
-    window_size = 5;      % Size of the local filtering window
-    damping_factor = 1;   % Damping factor for the Frost filter
-
-    % Step 1: Apply the Lee Filter
-    lee_filtered = leeFilter(noisy_image, window_size);
-
-    % Step 2: Apply the Kuan Filter
-    kuan_filtered = kuanFilter(noisy_image, window_size);
-
-    % Step 3: Apply the Frost Filter
-    frost_filtered = frostFilter(noisy_image, window_size, damping_factor);
-
-    % Calculate PSNR and RMSE values
-    [psnr_noisy, rmse_noisy] = calculate_metrics(image, noisy_image);
-    [psnr_lee, rmse_lee] = calculate_metrics(image, lee_filtered);
-    [psnr_kuan, rmse_kuan] = calculate_metrics(image, kuan_filtered);
-    [psnr_frost, rmse_frost] = calculate_metrics(image, frost_filtered);
-
-    % Calculate SSIM for ALL filters
-    [ssim_noisy, ~]  = ssim(noisy_image, image);
-    [ssim_lee, ~]    = ssim(lee_filtered, image);
-    [ssim_kuan, ~]   = ssim(kuan_filtered, image);
-    [ssim_frost, ~]  = ssim(frost_filtered, image);
-
-    % correlation parameter
-    cp_noisy = corr2(noisy_image, image);
-    cp_lee = corr2(lee_filtered, image);
-    cp_kuan = corr2(kuan_filtered, image);
-    cp_frost = corr2(frost_filtered, image);
-
-    % Display Bar graphs
-    filters = {'FROST', 'KUAN', 'LEE', 'NOISY'};
-    PSNR = [psnr_frost, psnr_kuan, psnr_lee, psnr_noisy];
-    RMSE = [rmse_frost, rmse_kuan, rmse_lee, rmse_noisy];
-    SSIM = [ssim_frost, ssim_kuan, ssim_frost, ssim_lee];
-    CORP = [cp_frost, cp_kuan, cp_lee, cp_noisy];
-    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
-    bar(data);
-    set(gca, 'XTickLabel', filters);
-    legend({'PSNR','RMSE','SSIM','CORP'});
-    ylabel('Value');
-    title('Filter Performance Comparison');
-    saveas(gcf,'bargraph_basic.png');
+    % === 3. Prepare Results Table ===
+    SSIM_Table = table; % XLSX table where result of all images with SSIM values.
+    Corr_Table = table; % XLSX table where result of all images with Corelation parameter values.
 
 
-    % Display results
-    figure;
-    subplot(2,2,1); imshow(noisy_image, []); 
-    title(sprintf('Noisy Image\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy));
+    % === 4. Loop Through Images ===
+    for k = 1:length(imgFiles)
+        % Read image
+        fname = imgFiles(k).name;% extract file names from the list of images.
+        fpath = fullfile(inFolder, fname);% combine input folder and image name to get full path where image is stored.
+        image = imread(fpath);% reads the input images.
     
-    subplot(2,2,2); imshow(lee_filtered, []); 
-    title(sprintf('Lee Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_lee, rmse_lee,ssim_lee,cp_lee));
+        % Convert to grayscale if needed
+        if size(image, 3) == 3
+            image = rgb2gray(image); % Convert to grayscale if it's a color image
+        end
 
-    subplot(2,2,3); imshow(kuan_filtered, []); 
-    title(sprintf('Kuan Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_kuan, rmse_kuan,ssim_kuan,cp_kuan));
-
-    subplot(2,2,4); imshow(frost_filtered, []); 
-    title(sprintf('Frost Filter\nPSNR: %.2f dB, RMSE: %.5f, SSIM:%.4f, CP:%.4f', psnr_frost, rmse_frost,ssim_frost,cp_frost));
+         % Normalize image to [0, 1]
+        image = double(image) / 255;
     
-    saveas(gcf, 'Basic_filtered_img.png');
+        % Add speckle noise with 0.08 variance (equivalent to 0.08 dB noise)
+        noise_variance = 0.08;
+        noisy_image = imnoise(image, 'speckle', noise_variance);
+    
+        % Parameters for the filters
+        window_size = 5;      % Size of the local filtering window
+        damping_factor = 1;   % Damping factor for the Frost filter
+    
+        % Step 1: Apply the Lee Filter
+        lee_filtered = leeFilter(noisy_image, window_size);
+    
+        % Step 2: Apply the Kuan Filter
+        kuan_filtered = kuanFilter(noisy_image, window_size);
+    
+        % Step 3: Apply the Frost Filter
+        frost_filtered = frostFilter(noisy_image, window_size, damping_factor);
+        
+        % Calculate SSIM for ALL filters
+        ssim_noisy  = ssim( noisy_image, image);
+        ssim_lee    = ssim( lee_filtered, image);
+        ssim_kuan   = ssim( kuan_filtered, image);
+        ssim_frost = ssim(frost_filtered, image);
+    
+        % correlation parameter
+        cp_noisy = corr2(noisy_image, image);
+        cp_lee = corr2(lee_filtered, image);
+        cp_kuan = corr2(kuan_filtered, image);
+        cp_frost = corr2(frost_filtered, image);
+   
+        % === Store in Tables ===
+        newRowSSIM = {fname, ssim_noisy, ssim_lee, ssim_kuan, ssim_frost};
+        SSIM_Table = [SSIM_Table; newRowSSIM]; %#ok<AGROW>
 
-    % Final results to put together in a spread sheet
-    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
-    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];
-    LEE = [psnr_lee, rmse_lee,ssim_lee,cp_lee];
-    KUAN = [psnr_kuan, rmse_kuan,ssim_kuan,cp_kuan];
-    FROST = [psnr_frost, rmse_frost,ssim_frost,cp_frost];  
+        newRowCorr = {fname, cp_noisy, cp_lee, cp_kuan, cp_frost};
+        Corr_Table = [Corr_Table; newRowCorr]; %#ok<AGROW>
 
-    % Put results into a table
-    T = table(analysis', NOISE', LEE', KUAN', FROST', 'VariableNames', {'ANALYSIS', 'NOISY', 'LEE', 'KUAN', 'FROST'});
+    end
+    
+    % === 5. Add Column Names ===
+    SSIM_Table.Properties.VariableNames = { ...
+        'ImageName','SSIM_Noisy','SSIM_Lee','SSIM_Kuan','SSIM_Frost'};
+    Corr_Table.Properties.VariableNames = { ...
+        'ImageName','Corr_Noisy','Corr_Lee','Corr_Kuan','Corr_Frost'};
 
-    % Write to Excel file
-    writetable(T, 'Filter_Comparison_Basic.xlsx');
+    % === 6. Save to Excel ===
+    writetable(SSIM_Table, fullfile(outFolder, 'SSIM_Results.xlsx'));
+    writetable(Corr_Table, fullfile(outFolder, 'Correlation_Results.xlsx'));
 
-    disp('Results saved to Filter_Comparison_basic.xlsx');
+    disp('All images processed and results saved!');
 
 end
 
@@ -136,26 +127,4 @@ function filtered_image = frostFilter(img, window_size, damping_factor)
             filtered_image(i, j) = sum(weights(:) .* localWindow(:));
         end
     end
-end
-
-% ----- PSNR and RMSE Calculation Function -----
-function [psnr_value, rmse_value] = calculate_metrics(original, processed)
-    original = double(original);
-    processed = double(processed);
-
-    % Normalize images to [0, 1] if they are not already
-    if max(original(:)) > 1
-        original = original / 255;
-    end
-    if max(processed(:)) > 1
-        processed = processed / 255;
-    end
-
-    % Calculate MSE and RMSE
-    mse = mean((original(:) - processed(:)).^2);
-    rmse_value = sqrt(mse);
-
-    % Calculate PSNR
-    max_pixel_value = 1;  % Since images are normalized to [0, 1]
-    psnr_value = 10 * log10((max_pixel_value^2) / mse);
 end

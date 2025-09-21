@@ -20,14 +20,6 @@ function srad_filtering1()
     % Apply SRAD
     filtered_img = srad_filter(noisy_img, kappa, lambda, iterations, epsilon);
 
-    % Calculate PSNR values
-    psnr_noisy = calculate_psnr(img, noisy_img);
-    psnr_filtered = calculate_psnr(img, filtered_img);
-
-    % Calculate RMSE values
-    rmse_noisy = calculate_rmse(img, noisy_img);
-    rmse_filtered = calculate_rmse(img, filtered_img);
-
     % Calculate SSIM values
     [ssim_noisy, ~] = ssim(noisy_img, img);
     [ssim_filtered, ~] = ssim(filtered_img, img);
@@ -36,42 +28,15 @@ function srad_filtering1()
     cp_noisy = corr2(noisy_img, img);
     cp_filt = corr2(filtered_img, img);
 
-    % Display Bar graphs
-    filters = {'NOISY', 'SRAD'};
-    PSNR = [psnr_noisy,psnr_filtered];
-    RMSE = [rmse_noisy,rmse_filtered];
-    SSIM = [ssim_noisy,ssim_filtered];
-    CORP = [cp_noisy,cp_filt];
-    data = [PSNR' RMSE' SSIM' CORP'];   % combine columns
-    bar(data);
-    set(gca, 'XTickLabel', filters);
-    legend({'PSNR','RMSE','SSIM','CORP'});
-    ylabel('Value');
-    title('Filter Performance Comparison');
-    saveas(gcf,'bargraph_SRAD.png');
 
     % Display the results
     figure;
     subplot(1, 3, 1); imshow(img, []); title('Original Image');
     subplot(1, 3, 2); imshow(noisy_img, []); 
-    title(sprintf('Noisy Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy));
+    title(sprintf('Noisy Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', ssim_noisy,cp_noisy));
     subplot(1, 3, 3); imshow(filtered_img, []); 
-    title(sprintf('SRAD Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f', psnr_filtered, rmse_filtered,ssim_filtered,cp_filt));
+    title(sprintf('SRAD Filtered Image\nPSNR: %.2f dB\nRMSE: %.5f\nSSIM: %.4f\nCP: %.4f',ssim_filtered,cp_filt));
     saveas(gcf, 'SRAD_img.png');
-
-    % Final results to put together in a spread sheet
-    analysis = {'PSNR', 'RMSE', 'SSIM', 'Correlation'};
-    NOISE = [psnr_noisy, rmse_noisy,ssim_noisy,cp_noisy];  
-    SRAD = [psnr_filtered, rmse_filtered,ssim_filtered,cp_filt]; 
-
-    % Put results into a table
-    T = table(analysis', NOISE', SRAD' ,'VariableNames', {'ANALYSIS', 'NOISE', 'SRAD Filtered'});
-
-    % Write to Excel file
-    writetable(T, 'Filter_Comparison_SRAD.xlsx');
-
-    disp('Results saved to Filter_Comparison_SRAD.xlsx');
-
 
 end
 
@@ -103,20 +68,3 @@ function filtered_img = srad_filter(img, kappa, lambda, iterations, epsilon)
         filtered_img = filtered_img + diffusion;
     end
 end
-
-function psnr_value = calculate_psnr(original, processed)
-    % Calculate PSNR
-    original = double(original);
-    processed = double(processed);
-    mse = mean((original(:) - processed(:)).^2);
-    max_pixel_value = 1; % Since the image is normalized to [0, 1]
-    psnr_value = 10 * log10((max_pixel_value^2) / mse);
-end
-
-function rmse_value = calculate_rmse(original, processed)
-    % Calculate RMSE
-    original = double(original);
-    processed = double(processed);
-    rmse_value = sqrt(mean((original(:) - processed(:)).^2));
-end
-
